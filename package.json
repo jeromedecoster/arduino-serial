@@ -1,0 +1,20 @@
+{
+  "name": "arduino-serial",
+  "version": "0.1.0",
+  "description": "arduino-serial",
+  "main": "index.js",
+  "scripts": {
+    "test": "DEBUG=serial,test node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/jeromedecoster/arduino-serial.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "eventemitter3": "^1.1.1",
+    "object-assign": "^3.0.0",
+    "serialport": "^1.7.4"
+  }
+}
