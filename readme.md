@@ -92,7 +92,7 @@ serial.start({ baudrate: 115200 })
 
 serial.on('open', function (serialport) {
   console.log('baudrate', serialport.options.baudRate)
-  // => baudrate 50
+  // => baudrate 115200
 })
 ```
 
@@ -129,6 +129,18 @@ serial.on('error', function (error) {
 }
 ```
 
+#### {ignore: true}
+
+Ingore incoming data before ping validation
+
+```js
+serial.start({ ping: true, ignore: true })
+
+serial.on('data', function (data) {
+  // nothing here before ping was validated
+}
+```
+
 ## License
 
-<a href="http://opensource.org/licenses/MIT" target="_blank">MIT</a>
+MIT
