@@ -1,3 +1,5 @@
+int count = 0;
+
 void setup() {
   Serial.begin(9600);
   Serial.setTimeout(10);
@@ -7,12 +9,13 @@ void setup() {
 
 void loop() {
   delay(50);
-  Serial.println("loop");
+  Serial.print("loop ");
+  Serial.println(++count);
   if (Serial.available()) {
     delay(30);
     String str = Serial.readString();
-    if (str == "ping") {
-      Serial.println("sketch:ping");
+    if (str == "sketch") {
+      Serial.println("sketch:good");
     }
   }
 }

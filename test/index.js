@@ -1,15 +1,14 @@
 const serial = require('../')
-const debug = require('../debug')('test')
+const debug = require('debug')('test')
 
 
-// serial.start()
-// serial.start({baudrate:50})
-serial.start({ping:true})
-// serial.start({ping:true, ignore:true})
-// serial.start({ping:true, sketch:'ping'})
-// serial.start({ping:true, ignore:true, sketch:'ping'})
-// serial.start({ping:true, ignore:true, sketch:'wrong'})
-// serial.start({ping:true, sketch:'wrong'})
+serial.start()
+// serial.start({baudrate:9600})
+// serial.start({sketch:'good'})
+// serial.start({sketch:'good', ignore:true})
+// serial.start({sketch:'bad'})
+// serial.start({sketch:'bad', close:false})
+// serial.start({sketch:'bad', close:false, ignore:true})
 
 
 serial.on('connect', function (path) {
@@ -17,7 +16,7 @@ serial.on('connect', function (path) {
 })
 
 serial.on('error', function (error) {
-  debug('on error', debug.red(error))
+  debug.red('on error', error)
 })
 
 serial.on('disconnect', function() {
@@ -28,8 +27,8 @@ serial.on('open', function (serialport) {
   debug('on open', serialport != undefined)
 })
 
-serial.on('ping', function (sketch) {
-  debug('on ping', debug.green(sketch))
+serial.on('sketch', function (sketch) {
+  debug.green('on sketch', sketch)
 })
 
 serial.on('data', function (data) {

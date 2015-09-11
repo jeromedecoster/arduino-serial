@@ -23,7 +23,7 @@ Install from a <a href="https://docs.npmjs.com/files/package.json#github-urls" t
 ## Example
 
 ```js
-serial.start({ping:true})
+serial.start({sketch:'blink'})
 
 serial.on('connect', function (path) {
   console.log('on connect', path)
@@ -42,8 +42,8 @@ serial.on('open', function (serialport) {
   console.log('on open', serialport)
 })
 
-serial.on('ping', function (sketch) {
-  console.log('on ping', sketch)
+serial.on('sketch', function (sketch) {
+  console.log('on sketch', sketch)
 })
 
 serial.on('data', function (data) {
@@ -65,9 +65,9 @@ Fired when the USB cable is unplugged
 
 Fired when the <a href="https://github.com/voodootikigod/node-serialport" target="_blank">node-serialport</a> instance is opened
 
-#### .on('ping', cb(sketch))
+#### .on('sketch', cb(sketch))
 
-Fired when the sketch name is received after the ping
+Fired when the sketch name is received
 
 #### .on('data', cb(data))
 
@@ -77,7 +77,7 @@ Fired when some data are recevied from the Arduino. Data are already `String.tri
 
 Fired when something goes wrong like
 
-* `TimeoutError` when the ping has no response after 4000ms
+* `TimeoutError` when the sketch request has no response after 4000ms
 
 * `SketchError` when the sketch name returned does not match
 
@@ -96,32 +96,15 @@ serial.on('open', function (serialport) {
 })
 ```
 
-#### {ping: true}
-
-Ping the arduino once connected
-
-```js
-serial.start({ ping: true })
-
-serial.on('ping', function (sketch) {
-  console.log('on ping', sketch)
-  // => on ping blink
-})
-
-serial.on('error', function(error) {
-  if (error.name == 'TimeoutError') { /* ping timeout */ }
-})
-```
-
 #### {sketch: 'name'}
 
 Checks if the arduino sketch matches
 
 ```js
-serial.start({ ping: true, sketch: 'test' })
+serial.start({ sketch: 'test' })
 
-serial.on('ping', function (sketch) {
-  console.log('on ping', sketch)
+serial.on('sketch', function (sketch) {
+  console.log('on sketch', sketch)
 })
 
 serial.on('error', function (error) {
@@ -134,12 +117,16 @@ serial.on('error', function (error) {
 Ingore incoming data before ping validation
 
 ```js
-serial.start({ ping: true, ignore: true })
+serial.start({ sketch: 'blink', ignore: true })
 
 serial.on('data', function (data) {
-  // nothing here before ping was validated
+  // nothing here before sketch was validated
 }
 ```
+
+#### {close: false}
+
+Don't close `serialport` connection on `SketchError` or `TimeoutError`
 
 ## License
 

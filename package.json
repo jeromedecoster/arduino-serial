@@ -1,6 +1,6 @@
 {
   "name": "arduino-serial",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "arduino-serial",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "debug": "jeromedecoster/debug",
     "eventemitter3": "^1.1.1",
     "object-assign": "^3.0.0",
     "serialport": "^1.7.4"

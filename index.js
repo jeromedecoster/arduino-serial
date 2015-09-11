@@ -1,7 +1,7 @@
 const serialport = require('serialport')
 const assign = require('object-assign')
 const emitter = new (require('eventemitter3'))
-const debug = require('./debug')('serial')
+const debug = require('debug')('serial')
 
 
 exports.on = function (name, cb) {
@@ -18,13 +18,15 @@ exports.off = function (name, cb) {
 
 
 var started
+var validated
+var closed
 var path
 var serial
 var time
-var ping
+var send
 var options = {
   baudrate: 9600,
-  ping: false,
+  close: true,
   ignore: false
 }
 
@@ -41,10 +43,14 @@ exports.start = function (opt) {
  */
 
 function check () {
+  if (closed) return
   debug('check')
   serialport.list(function (err, ports) {
     var result = ports
-      .filter(function (o) { return /arduino/i.test(o.manufacturer) })
+      .filter(function (o) {
+        return /arduino/i.test(o.manufacturer)
+            || /cu\.wchusbserial/i.test(o.comName)
+      })
       .map(function (o) { return o.comName })
       .shift() || null
 
@@ -56,12 +62,12 @@ function check () {
         onconnect()
       }
     }
-    if (!result) setTimeout(check, 100)
+    if (!result) setTimeout(check, 250)
   })
 }
 
 function onconnect () {
-  ping = options.ping
+  send = options.sketch != undefined
 
   serial = new serialport.SerialPort(path, {
     baudrate: options.baudrate,
@@ -69,29 +75,33 @@ function onconnect () {
   })
 
   serial.on('open', function () {
+    // 50 milliseconds timeout to prevents data flood at startup, works good if
+    // arduino baudrate is at least 9600
+    // arduino loop function starts with a 50 milliseconds delay
     setTimeout(function () {
       emitter.emit('open', serial)
       onopen()
-    }, 20) // prevents data flood at startup
+    }, 50)
   })
 }
 
 function onopen () {
   debug('onopen')
 
-  if (ping) {
+  if (send) {
     time = Date.now()
-    sendping()
+    sendsketch()
   }
 
   serial.on('data', function (data) {
     data = data.trim()
-    if (ping && /^sketch:/.test(data)) {
+
+    if (send && /^sketch:/.test(data)) {
       onsketch(data)
     } else {
-      if (!options.ping   // no ping requested
-      ||  !options.ignore // ping resquested but don't ignore incoming data
-      ||  !ping) {        // ping resquested, ignore incoming data before ping and ping done
+      if (!options.sketch        // no sketch requested
+      ||  !options.ignore        // sketch resquested + don't ignore incoming data before sketch response
+      || (!send && validated)) { // sketch resquested + ignore incoming data + validated sketch response received
         emitter.emit('data', data)
       }
     }
@@ -103,32 +113,47 @@ function onopen () {
 
 function onsketch (data) {
   debug('onsketch', data)
-  ping = false
+  send = false
   var sketch = data.substr(7)
-  if (options.sketch) {
-    if (sketch != options.sketch) {
+  emitter.emit('sketch', sketch)
+  if (sketch != options.sketch) {
+    validated = false
+    var err = new Error('sketch `' + sketch + '` insteadof `' + options.sketch + '`')
+    err.name = 'SketchError'
+    if (options.close) {
+      closed = true
       serial.pause()
-      var err = new Error('sketch `' + sketch + '` insteadof `' + options.sketch + '`')
-      err.name = 'SketchError'
+      serial.close(function() {
+        emitter.emit('error', err)
+      })
+    } else {
       emitter.emit('error', err)
-      return
-   }
+    }
+  } else {
+    validated = true
   }
-  emitter.emit('ping', sketch)
 }
 
-function sendping () {
-  if (ping) {
-    debug('send ping')
-    serial.write('ping')
+function sendsketch () {
+  if (!serial.isOpen()) return
+  if (send) {
+    debug('sendsketch')
+    serial.write('sketch')
     if (Date.now() - time > 4000) {
-      debug(debug.red('ping timeout error'))
-      serial.pause()
-      var err = new Error('ping without response')
+      debug.red('sendsketch timeout error')
+      var err = new Error('sketch request without response')
       err.name = 'TimeoutError'
-      emitter.emit('error', err)
+      if (options.close) {
+        closed = true
+        serial.pause()
+        serial.close(function() {
+          emitter.emit('error', err)
+        })
+      } else {
+        emitter.emit('error', err)
+      }
     } else {
-      setTimeout(sendping, 100)
+      setTimeout(sendsketch, 250)
     }
   }
 }
