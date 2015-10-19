@@ -1,21 +1,18 @@
 {
   "name": "arduino-serial",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "arduino-serial",
   "main": "index.js",
   "scripts": {
     "test": "DEBUG=serial,test node test"
   },
-  "repository": {
-    "type": "git",
-    "url": "github.com/jeromedecoster/arduino-serial.git"
-  },
+  "repository": "jeromedecoster/arduino-serial",
   "author": "",
   "license": "MIT",
   "dependencies": {
     "debug": "jeromedecoster/debug",
     "eventemitter3": "^1.1.1",
     "object-assign": "^3.0.0",
-    "serialport": "^1.7.4"
+    "serialport": "^2.0.1"
   }
 }
