@@ -59,7 +59,8 @@ function check () {
       path = result
       if (path) {
         emitter.emit('connect', path)
-        onconnect()
+        // timeout to prevents 'Error: Cannot open /path'
+        setTimeout(onconnect, 250)
       }
     }
     if (!result) setTimeout(check, 250)
