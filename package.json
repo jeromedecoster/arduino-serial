@@ -6,6 +6,9 @@
   "scripts": {
     "test": "DEBUG=serial,test node test"
   },
+  "files": [
+    "index.js"
+  ],
   "repository": "jeromedecoster/arduino-serial",
   "author": "",
   "license": "MIT",
